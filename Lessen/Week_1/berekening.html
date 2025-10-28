@@ -21,22 +21,40 @@
             padding: 10px;
             border-radius: 10px;
         }
+
+        #output.warning {
+            border: 3px solid red;
+            background-color: pink;
+        }
     </style>
 
     <script>
         function calculate() {
+            var output = document.getElementById('output');
             var input = document.getElementById('amountInput');
             var amount = input.value;
 
+            // Accept comma notated numbers
+            amount = amount.replace(',', '.');
+
+            // Validate input
+            if (isNaN(amount)) {
+                output.innerHTML = 'Voer een getal in!';
+                output.className = 'warning';
+                return
+            }
+
+            output.className = '';
             var today = new Date();
             var start = today.getFullYear() + 1;
             var end = start + 10;
 
-            document.getElementById('output').innerHTML = '';
+            output.innerHTML = '';
 
             for (var i = start; i < end; i++) {
                 amount *= 1.05;
-                document.getElementById('output').innerHTML += `<p>In ${i} heb je €${amount.toFixed(2)}</p>`;
+                var displayAmount = amount.toFixed(2).replace('.',',');
+                output.innerHTML += `<p>In ${i} heb je €${displayAmount}</p>`;
             }
 
             return amount;
@@ -48,9 +66,11 @@
 
     <h1>Berekening</h1>
 
-    <label for="amountInput">Kapitaal:</label>
-    <input id="amountInput" type="number" value="1000">
-    <button onclick="calculate()">Bereken</button>
+    <form onsubmit="calculate(); return false">
+        <label for="amountInput">Kapitaal:</label>
+        <input id="amountInput" value="1000">
+        <button type="submit">Bereken</button>
+    </form>
 
     <div id="output">Hier komt straks het antwoord</div>
 
