@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <style>
+        body {
+            font-family: arial;
+            text-align: center;
+        }
+
+        #output {
+            background-color: lightgreen;
+            border: 3px solid green;
+            width: 300px;
+            margin: 20px auto;
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+
+    <script>
+        function calculate() {
+            var input = document.getElementById('amountInput');
+            var amount = input.value;
+
+            var today = new Date();
+            var start = today.getFullYear() + 1;
+            var end = start + 10;
+
+            document.getElementById('output').innerHTML = '';
+
+            for (var i = start; i < end; i++) {
+                amount *= 1.05;
+                document.getElementById('output').innerHTML += `<p>In ${i} heb je €${amount.toFixed(2)}</p>`;
+            }
+
+            return amount;
+        }
+    </script>
+</head>
+<body>
+<div class="main-container">
+
+    <h1>Berekening</h1>
+
+    <label for="amountInput">Kapitaal:</label>
+    <input id="amountInput" type="number" value="1000">
+    <button onclick="calculate()">Bereken</button>
+
+    <div id="output">Hier komt straks het antwoord</div>
+
+
+</div>
+</body>
+</html>
