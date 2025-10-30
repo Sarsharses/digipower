@@ -53,6 +53,12 @@
             border: solid 1px black;
             width: 180px;
         }
+
+        nav {
+            text-align: left;
+            border: 2px solid grey;
+            padding: 5px;
+        }
     </style>
 
     <script>
@@ -94,69 +100,61 @@
 
 
         // Recursive functions
-        function recursiveInvestment(currentYear, endYear, balance, yearlyInlay, interest, outputHTML = "") {
+        function recursiveInvestment(currentYear, endYear, balance, yearlyInlay, interest, outputHTML = "", totalInlay = 0) {
             if (currentYear >= endYear) {
-                return {balance, outputHTML}; // base case returns both balance and HTML
+                return {balance, outputHTML, totalInlay};
             }
 
-            // Add the yearly inlay at the start of each year
+            // Add yearly inlay (can be 0)
             balance += yearlyInlay;
+            totalInlay += yearlyInlay;
             count++;
 
             // Apply interest
             balance *= 1 + (interest / 100);
 
-            // Append year result as a <p> tag
-            const total = (yearlyInlay * count).toFixed(2).replace('.', ',');
-            const difference = balance - (yearlyInlay * count);
+            // Prepare display numbers
+            const displayTotal = totalInlay.toFixed(2).replace('.', ',');
+            const difference = balance - totalInlay;
             const displayBalance = balance.toFixed(2).replace('.', ',');
             const displayDifference = difference.toFixed(2).replace('.', ',');
 
+            // Append to output
             outputHTML += `<p>
-                                <strong>
-                                In ${currentYear} heb je:
-                                </strong>
-                                <table>
-                                    <tr>
-                                        <td>Totaal ingelegd</td>
-                                        <td>€${total}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Totaal balans</td>
-                                        <td>€${displayBalance}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>Verschil</td>
-                                        <td>€${displayDifference}</td>
-                                    </tr>
-                                </table>
-                            </p>`;
+                <strong>In ${currentYear} heb je:</strong>
+                <table>
+                    <tr><td>Totaal ingelegd</td><td>€${displayTotal}</td></tr>
+                    <tr><td>Totaal balans</td><td>€${displayBalance}</td></tr>
+                    <tr><td>Verschil</td><td>€${displayDifference}</td></tr>
+                </table>
+            </p>`;
 
-            // Recursive step for next year
-            return recursiveInvestment(currentYear + 1, endYear, balance, yearlyInlay, interest, outputHTML);
+            return recursiveInvestment(currentYear + 1, endYear, balance, yearlyInlay, interest, outputHTML, totalInlay);
         }
 
         function calculateRecursive() {
-            // Reset global counter and base balance
             count = 0;
-            let balance = 0;
 
             const duration = parseInt(document.getElementById('duration').value);
             const interest = parseFloat(document.getElementById('interest').value);
-            let amount = parseFloat(document.getElementById('amount').value.replace(',', '.'));
+            let yearlyInlay = parseFloat(document.getElementById('amount').value.replace(',', '.'));
+            let startCapital = parseFloat(document.getElementById('start').value.replace(',', '.'));
 
-            if (isNaN(amount) || isNaN(interest)) {
-                alert('Voer een geldig getal in!');
+            if (isNaN(yearlyInlay) || isNaN(interest) || isNaN(startCapital)) {
+                alert('Voer geldige getallen in!');
                 return;
             }
 
             const startYear = new Date().getFullYear() + 1;
             const endYear = startYear + duration;
 
-            const result = recursiveInvestment(startYear, endYear, balance, amount, interest);
+            const result = recursiveInvestment(startYear, endYear, startCapital, yearlyInlay, interest);
 
-            document.getElementById('output').innerHTML =
-                `${result.outputHTML}<p><strong>Na ${duration} jaar met jaarlijkse inleg van €${amount.toFixed(2)}, voor een totaal van €${(amount * duration).toFixed(2)}, en ${interest}% rente heb je: €${result.balance.toFixed(2)}</strong></p>`;
+            document.getElementById('output').innerHTML = `
+                ${result.outputHTML}
+                <p><strong>Na ${duration} jaar met startkapitaal van €${startCapital.toFixed(2)}
+                en jaarlijkse inleg van €${yearlyInlay.toFixed(2)}, heb je na ${duration} jaar
+                met ${interest}% rente een totaal van: €${result.balance.toFixed(2)}</strong></p>`;
         }
 
     </script>
@@ -184,8 +182,12 @@
     <input id="interest" type="number" min="1" max="10" step="0.25" value="5">
     <br>
 
-    <label for="amount">Kapitaal:</label>
+    <label for="amount">Jaarlijkse inleg:</label>
     <input id="amount" value="1000">
+    <br>
+
+    <label for="start">Startkapitaal (optioneel):</label>
+    <input id="start" value="0">
     <br>
 
     <button type="submit">Bereken</button>
