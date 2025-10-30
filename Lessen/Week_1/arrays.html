@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            font-family: arial;
+            text-align: center;
+            background-color: beige;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin: 10px 0 5px 0;
+        }
+
+        button {
+            width: 70px;
+        }
+
+        img {
+            border-radius: 20px;
+            border: 15px solid brown;
+        }
+
+        nav {
+            text-align: left;
+            border: 2px solid grey;
+            padding: 5px;
+        }
+    </style>
+    <script>
+        var animals = ['Wolf', 'Panda', 'Eagle', 'Sheep', 'Rhino', 'Tiger', 'Elephant', 'Lion', 'Bear', 'Monkey'];
+        var index = 0;
+
+        function previousPhoto() {
+            index--;
+            if (index < 0) {
+                index = animals.length - 1;
+            }
+            showPhoto();
+        }
+
+        function nextPhoto() {
+            index++;
+            if (index === animals.length) {
+                index = 0;
+            }
+            showPhoto();
+        }
+
+        function showPhoto() {
+            var counter = document.getElementById('counter');
+            var photo = document.getElementById('photo');
+            var description = document.getElementById('description');
+
+            counter.innerHTML = `Foto ${index + 1} van ${animals.length}`;
+            photo.src = `https://xanderwemmers.nl/${animals[index]}.jpg`;
+            photo.title = animals[index];
+            photo.alt = animals[index];
+            description.innerHTML = animals[index];
+        }
+    </script>
+</head>
+<body onload="showPhoto()">
+<nav>
+    <a href="berekening.html">Berekening</a>
+    <a href="arrays.html">Dierentuin</a>
+</nav>
+
+<h1>Dierentuin</h1>
+
+<p id="counter"></p>
+
+<img id="photo" src="" height="200" alt="" title="">
+
+<h3 id="description"></h3>
+
+<button onclick="previousPhoto()">&lt;</button>
+<button onclick="nextPhoto()">&gt;</button>
+</body>
+</html>
