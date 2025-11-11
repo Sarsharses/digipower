@@ -6,183 +6,159 @@
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-</head>
-<style>
-    body {
-        font-family: arial;
-        text-align: center;
-        background-color: beige;
-    }
-
-    button {
-        border-radius: 20px;
-        box-shadow: 2px 2px 5px darkgreen;
-        margin: 5px;
-        cursor: pointer;
-    }
-
-    button:disabled {
-        opacity: 0.3;
-        cursor: not-allowed;
-    }
-
-    img {
-        margin: 20px;
-        height: 100px;
-    }
-
-    nav {
-        text-align: left;
-        border: 2px solid grey;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 20px;
-    }
-
-    .navItem {
-        border: 1px solid black;
-        border-radius: 20px;
-        padding: 5px;
-        font-weight: bold;
-    }
-</style>
-<script>
-    const votes = {
-        'Londen': 0,
-        'Parijs': 0,
-        'Berlijn': 0,
-        'Barcelona': 0
-    };
-
-    let voteCount = 0;
-
-    function vote(city) {
-        voteCount++;
-        votes[city]++;
-        showResults();
-        if (voteCount === 10) {
-            disableButtons();
-        }
-    }
-
-    function addButtons() {
-        let buttonsEl = document.getElementById('buttonsEl');
-        buttonsEl.innerHTML = '';
-
-        for (let city in votes) {
-            const btn = document.createElement('button');
-            btn.className = 'btn';
-            btn.onclick = () => vote(city);
-
-            const img = document.createElement('img');
-            img.className = 'img';
-            img.src = `img/${city.toLowerCase()}.jpg`;
-            btn.append(img);
-            buttonsEl.append(btn);
+    <script src="../common/load-navbar.js"></script>
+    <link rel="stylesheet" href="../common/style.css">
+    <style>
+        button {
+            border-radius: 20px;
+            box-shadow: 2px 2px 5px darkgreen;
+            margin: 5px;
+            cursor: pointer;
         }
 
-        showResults();
-    }
-
-    function showResults() {
-        let results = document.getElementById('results');
-        results.innerHTML = '';
-
-        for (let city in votes) {
-            let percentage = votes[city] / voteCount * 100;
-            percentage = parseFloat(percentage.toFixed(1));
-
-            if (isNaN(percentage)) {
-                percentage = 0;
-            }
-
-            let p = document.createElement('p');
-            p.innerHTML = `Er is ${votes[city]} keer gestemd op ${city}. ${percentage}%`;
-
-            results.append(p);
+        button:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
 
-        setCounter();
-        declareWinner();
-    }
-
-    function setCounter() {
-        let voteCounterEl = document.getElementById('voteCounter');
-        voteCounterEl.innerHTML = voteCount;
-    }
-
-    function disableButtons() {
-        let buttonEls = document.querySelectorAll('.btn');
-        for (const button of buttonEls) {
-            button.setAttribute('disabled', '');
+        img {
+            margin: 20px;
+            height: 100px;
         }
-    }
+    </style>
+    <script>
+        const votes = {
+            'Londen': 0,
+            'Parijs': 0,
+            'Berlijn': 0,
+            'Barcelona': 0
+        };
 
-    function enableButtons() {
-        let buttonEls = document.querySelectorAll('.btn');
-        for (const button of buttonEls) {
-            button.removeAttribute('disabled');
-        }
-    }
+        let voteCount = 0;
 
-    function declareWinner() {
-        let winnerEl = document.getElementById('winner');
-        let highestCount = 0;
-        let winners = [];
-
-        if (voteCount === 0) {
-            winnerEl.innerHTML = 'Er is nog geen winnaar';
-            return;
-        }
-
-        for (let city in votes) {
-            if (votes[city] > highestCount) {
-                highestCount = votes[city];
-                winners = [city];
-            } else if (votes[city] === highestCount && highestCount > 0) {
-                winners.push(city);
+        function vote(city) {
+            voteCount++;
+            votes[city]++;
+            showResults();
+            if (voteCount === 10) {
+                disableButtons();
             }
         }
 
-        if (voteCount === 10) {
+        function addButtons() {
+            let buttonsEl = document.getElementById('buttonsEl');
+            buttonsEl.innerHTML = '';
+
+            for (let city in votes) {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.onclick = () => vote(city);
+
+                const img = document.createElement('img');
+                img.className = 'img';
+                img.src = `img/${city.toLowerCase()}.jpg`;
+                btn.append(img);
+                buttonsEl.append(btn);
+            }
+
+            showResults();
+        }
+
+        function showResults() {
+            let results = document.getElementById('results');
+            results.innerHTML = '';
+
+            for (let city in votes) {
+                let percentage = votes[city] / voteCount * 100;
+                percentage = parseFloat(percentage.toFixed(1));
+
+                if (isNaN(percentage)) {
+                    percentage = 0;
+                }
+
+                let p = document.createElement('p');
+                p.innerHTML = `Er is ${votes[city]} keer gestemd op ${city}. ${percentage}%`;
+
+                results.append(p);
+            }
+
+            setCounter();
+            declareWinner();
+        }
+
+        function setCounter() {
+            let voteCounterEl = document.getElementById('voteCounter');
+            voteCounterEl.innerHTML = voteCount;
+        }
+
+        function disableButtons() {
+            let buttonEls = document.querySelectorAll('.btn');
+            for (const button of buttonEls) {
+                button.setAttribute('disabled', '');
+            }
+        }
+
+        function enableButtons() {
+            let buttonEls = document.querySelectorAll('.btn');
+            for (const button of buttonEls) {
+                button.removeAttribute('disabled');
+            }
+        }
+
+        function declareWinner() {
+            let winnerEl = document.getElementById('winner');
+            let highestCount = 0;
+            let winners = [];
+
+            if (voteCount === 0) {
+                winnerEl.innerHTML = 'Er is nog geen winnaar';
+                return;
+            }
+
+            for (let city in votes) {
+                if (votes[city] > highestCount) {
+                    highestCount = votes[city];
+                    winners = [city];
+                } else if (votes[city] === highestCount && highestCount > 0) {
+                    winners.push(city);
+                }
+            }
+
+            if (voteCount === 10) {
+                toggleReset();
+            }
+
+            if (winners.length > 1) {
+                winnerEl.innerHTML = `De winnaars zijn: ${winners}`;
+            } else {
+                winnerEl.innerHTML = `De winnaar is: ${winners}`;
+            }
+        }
+
+        function toggleReset() {
+            let resetBtn = document.getElementById('resetBtn');
+            let style = resetBtn.style.display;
+            if (style === 'none') {
+                resetBtn.style.display = 'inline';
+            } else {
+                resetBtn.style.display = 'none';
+            }
+        }
+
+        function reset() {
+            for (let city in votes) {
+                votes[city] = 0;
+            }
+            let winnerEl = document.getElementById('winner');
+            winnerEl.innerHTML = '';
+            voteCount = 0;
+            enableButtons();
             toggleReset();
+            showResults();
         }
-
-        if (winners.length > 1) {
-            winnerEl.innerHTML = `De winnaars zijn: ${winners}`;
-        } else {
-            winnerEl.innerHTML = `De winnaar is: ${winners}`;
-        }
-    }
-
-    function toggleReset() {
-        let resetBtn = document.getElementById('resetBtn');
-        let style = resetBtn.style.display;
-        if (style === 'none') {
-            resetBtn.style.display = 'inline';
-        } else {
-            resetBtn.style.display = 'none';
-        }
-    }
-
-    function reset() {
-        for (let city in votes) {
-            votes[city] = 0;
-        }
-        let winnerEl = document.getElementById('winner');
-        winnerEl.innerHTML = '';
-        voteCount = 0;
-        enableButtons();
-        toggleReset();
-        showResults();
-    }
-</script>
+    </script>
+</head>
 <body onload="addButtons()">
-<nav>
-    <a class="navItem" href="berekening.html">Berekening</a>
-    <a class="navItem" href="arrays.html">Dierentuin</a>
-    <a class="navItem" href="stemmen.html">Stemmen</a>
-</nav>
 
 <h1>Waarheen op vakantie?</h1>
 
