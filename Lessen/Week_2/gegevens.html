@@ -37,7 +37,7 @@
     <input type="text" id="dateOfBirth" required/>
 
     <label for="colorPicker">Kleur</label>
-    <input type="color" id="colorPicker" />
+    <input type="color" id="colorPicker"/>
     <br>
     <br>
     <button id="saveBtn">Opslaan</button>
@@ -54,51 +54,56 @@
         const loadBtn = $('#loadBtn');
         const clearBtn = $('#clearBtn');
 
-        const name = $('name');
-        const lastName = $('lastName');
+        const name = $('#name');
+        const lastName = $('#lastName');
         const dOB = $('#dateOfBirth');
         const colorPicker = $('#colorPicker');
+        const dialog = $("#dialog");
 
-        const dialog = $( "#dialog" );
+        // Helper functions
+        const getFormData = () => ({
+            name: name.val(),
+            lastName: lastName.val(),
+            dateOfBirth: dOB.val(),
+            color: colorPicker.val()
+        });
 
-        saveBtn.on('click', () => saveData());
-        loadBtn.on('click', () => loadData());
-        clearBtn.on('click', () => clearData());
-
-        function saveData() {
-            let invalids = $('input:invalid');
-
-            if (invalids.length > 0) {
-                // alert('Het formulier is ongeldig');
-                dialog.show();
-                dialog.dialog();
-                return;
-            }
-
-            let data = {
-                name: name.val(),
-                lastName: lastName.val(),
-                dateOfBirth: dOB.val(),
-                color: colorPicker.val()
-            }
-
-            localStorage.mijnData = JSON.stringify(data);
-        }
-
-        function loadData() {
-            if (!localStorage.mijnData) return;
-            let data = JSON.parse(localStorage.mijnData);
-
+        const setFormData = (data) => {
             name.val(data.name);
             lastName.val(data.lastName);
             dOB.val(data.dateOfBirth);
             colorPicker.val(data.color);
         }
 
-        function clearData() {
-            $('input').val('');
-        }
+        const saveToLocalStorage = (data) => {
+            localStorage.setItem('mijnData', JSON.stringify(data));
+        };
 
+        const loadFromLocalStorage = () => {
+            const raw = localStorage.getItem('mijnData');
+            return raw ? JSON.parse(raw) : null;
+        };
+
+        // Event handlers
+        saveBtn.on('click', () => {
+            const invalids = $('input:invalid');
+
+            if (invalids.length > 0) {
+                dialog.show().dialog();
+                return;
+            }
+            const data = getFormData();
+            saveToLocalStorage(data);
+        });
+
+        loadBtn.on('click', () => {
+            const data = loadFromLocalStorage();
+            if (data) setFormData(data);
+        });
+
+        clearBtn.on('click', () => $('input').val(''));
+
+        // Initialize date picker
         dOB.datepicker();
     });
 </script>
