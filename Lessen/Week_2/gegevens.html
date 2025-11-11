@@ -5,53 +5,103 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <title>Gegevens</title>
     <script src="../common/load-navbar.js"></script>
     <link rel="stylesheet" href="../common/style.css">
 
-<!--    <script src="https://code.jquery.com/jquery-3.7.1.js"-->
-<!--            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>-->
-<!--    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"-->
-<!--            integrity="sha256-9zljDKpE/mQxmaR4V2cGVaQ7arF3CcXxarvgr7Sj8Uc=" crossorigin="anonymous"></script>-->
-<!--    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/humanity/jquery-ui.css"-->
-<!--          crossorigin="anonymous">-->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"
+            integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"
+            integrity="sha256-9zljDKpE/mQxmaR4V2cGVaQ7arF3CcXxarvgr7Sj8Uc=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/humanity/jquery-ui.css"
+          crossorigin="anonymous">
 
     <style>
-        body {
-            font-family: arial;
-        }
-
-        label {
-            display: block;
-            margin-top: 20px;
-            margin-bottom: 5px;
+        input:invalid {
+            border: 1px solid red;
+            background: pink;
         }
     </style>
-    <script>
-        function saveData()
-        {
+</head>
+<body>
+<div>
+    <h1>Mijn gegevens</h1>
+
+    <label for="name">Voornaam</label>
+    <input type="text" id="name" required/>
+
+    <label for="lastName">Achternaam</label>
+    <input type="text" id="lastName" required/>
+
+    <label for="dateOfBirth">Geboortedatum</label>
+    <input type="text" id="dateOfBirth" required/>
+
+    <label for="colorPicker">Kleur</label>
+    <input type="color" id="colorPicker" />
+    <br>
+    <br>
+    <button id="saveBtn">Opslaan</button>
+    <button id="loadBtn">Laden</button>
+    <button id="clearBtn">Wissen</button>
+
+    <div id="dialog" title="Oeps!" style="display: none;">
+        <p>Niet al je velden zijn correct ingevuld</p>
+    </div>
+</div>
+<script>
+    $(() => {
+        const saveBtn = $('#saveBtn');
+        const loadBtn = $('#loadBtn');
+        const clearBtn = $('#clearBtn');
+
+        const name = $('name');
+        const lastName = $('lastName');
+        const dOB = $('#dateOfBirth');
+        const colorPicker = $('#colorPicker');
+
+        const dialog = $( "#dialog" );
+
+        saveBtn.on('click', () => saveData());
+        loadBtn.on('click', () => loadData());
+        clearBtn.on('click', () => clearData());
+
+        function saveData() {
+            let invalids = $('input:invalid');
+
+            if (invalids.length > 0) {
+                // alert('Het formulier is ongeldig');
+                dialog.show();
+                dialog.dialog();
+                return;
+            }
+
             let data = {
-                voornaam: $('#voornaam').val(),
-                achternaam: $('#achternaam').val()
+                name: name.val(),
+                lastName: lastName.val(),
+                dateOfBirth: dOB.val(),
+                color: colorPicker.val()
             }
 
             localStorage.mijnData = JSON.stringify(data);
         }
-    </script>
-</head>
-<body>
-<h1>Mijn gegevens</h1>
 
-<label>Voornaam</label>
+        function loadData() {
+            if (!localStorage.mijnData) return;
+            let data = JSON.parse(localStorage.mijnData);
 
-<input type="text" id="voornaam"/>
+            name.val(data.name);
+            lastName.val(data.lastName);
+            dOB.val(data.dateOfBirth);
+            colorPicker.val(data.color);
+        }
 
-<label>Achternaam</label>
-<input type="text" id="achternaam"/>
+        function clearData() {
+            $('input').val('');
+        }
 
-<br>
-<br>
-<button onclick="saveData()">Opslaan</button>
-<button>Laden</button>
+        dOB.datepicker();
+    });
+</script>
+
 </body>
 </html>
