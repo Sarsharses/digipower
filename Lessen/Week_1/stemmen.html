@@ -18,6 +18,7 @@
         border-radius: 20px;
         box-shadow: 2px 2px 5px darkgreen;
         margin: 5px;
+        cursor: pointer;
     }
 
     button:disabled {
@@ -46,14 +47,14 @@
     }
 </style>
 <script>
-    var votes = {
+    const votes = {
         'Londen': 0,
         'Parijs': 0,
         'Berlijn': 0,
         'Barcelona': 0
     };
 
-    var voteCount = 0;
+    let voteCount = 0;
 
     function vote(city) {
         voteCount++;
@@ -65,15 +66,13 @@
     }
 
     function addButtons() {
-        var buttonsEl = document.getElementById('buttonsEl');
+        let buttonsEl = document.getElementById('buttonsEl');
         buttonsEl.innerHTML = '';
 
         for (let city in votes) {
             const btn = document.createElement('button');
             btn.className = 'btn';
-            btn.onclick = function() {
-                vote(city);
-            };
+            btn.onclick = () => vote(city);
 
             const img = document.createElement('img');
             img.className = 'img';
@@ -86,18 +85,18 @@
     }
 
     function showResults() {
-        var results = document.getElementById('results');
+        let results = document.getElementById('results');
         results.innerHTML = '';
 
-        for (var city in votes) {
-            var percentage = votes[city] / voteCount * 100;
-            percentage = percentage.toFixed(1);
+        for (let city in votes) {
+            let percentage = votes[city] / voteCount * 100;
+            percentage = parseFloat(percentage.toFixed(1));
 
             if (isNaN(percentage)) {
                 percentage = 0;
             }
 
-            var p = document.createElement('p');
+            let p = document.createElement('p');
             p.innerHTML = `Er is ${votes[city]} keer gestemd op ${city}. ${percentage}%`;
 
             results.append(p);
@@ -108,35 +107,35 @@
     }
 
     function setCounter() {
-        var voteCounterEl = document.getElementById('voteCounter');
+        let voteCounterEl = document.getElementById('voteCounter');
         voteCounterEl.innerHTML = voteCount;
     }
 
     function disableButtons() {
-        var buttonEls = document.querySelectorAll('.btn');
+        let buttonEls = document.querySelectorAll('.btn');
         for (const button of buttonEls) {
             button.setAttribute('disabled', '');
         }
     }
 
     function enableButtons() {
-        var buttonEls = document.querySelectorAll('.btn');
+        let buttonEls = document.querySelectorAll('.btn');
         for (const button of buttonEls) {
             button.removeAttribute('disabled');
         }
     }
 
     function declareWinner() {
-        var winnerEl = document.getElementById('winner');
-        var highestCount = 0;
-        var winners = [];
+        let winnerEl = document.getElementById('winner');
+        let highestCount = 0;
+        let winners = [];
 
         if (voteCount === 0) {
             winnerEl.innerHTML = 'Er is nog geen winnaar';
             return;
         }
 
-        for (var city in votes) {
+        for (let city in votes) {
             if (votes[city] > highestCount) {
                 highestCount = votes[city];
                 winners = [city];
@@ -144,6 +143,11 @@
                 winners.push(city);
             }
         }
+
+        if (voteCount === 10) {
+            toggleReset();
+        }
+
         if (winners.length > 1) {
             winnerEl.innerHTML = `De winnaars zijn: ${winners}`;
         } else {
@@ -151,14 +155,25 @@
         }
     }
 
+    function toggleReset() {
+        let resetBtn = document.getElementById('resetBtn');
+        let style = resetBtn.style.display;
+        if (style === 'none') {
+            resetBtn.style.display = 'inline';
+        } else {
+            resetBtn.style.display = 'none';
+        }
+    }
+
     function reset() {
-        for (var city in votes) {
+        for (let city in votes) {
             votes[city] = 0;
         }
-        var winnerEl = document.getElementById('winner');
+        let winnerEl = document.getElementById('winner');
         winnerEl.innerHTML = '';
         voteCount = 0;
         enableButtons();
+        toggleReset();
         showResults();
     }
 </script>
@@ -180,6 +195,6 @@
 
 <h3 id="winner"></h3>
 
-<button onclick="reset()">Reset</button>
+<button id="resetBtn" onclick="reset()" style="display: none;">Reset</button>
 </body>
 </html>

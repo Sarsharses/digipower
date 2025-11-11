@@ -21,6 +21,7 @@
 
         button {
             width: 70px;
+            cursor: pointer;
         }
 
         img {
@@ -44,8 +45,8 @@
         }
     </style>
     <script>
-        var animals = ['Wolf', 'Panda', 'Eagle', 'Sheep', 'Rhino', 'Tiger', 'Elephant', 'Lion', 'Bear', 'Monkey'];
-        var index = 0;
+        const animals = ['Wolf', 'Panda', 'Eagle', 'Sheep', 'Rhino', 'Tiger', 'Elephant', 'Lion', 'Bear', 'Monkey'];
+        let index = 0;
 
         function previousPhoto() {
             index--;
@@ -64,9 +65,9 @@
         }
 
         function showPhoto() {
-            var counter = document.getElementById('counter');
-            var photo = document.getElementById('photo');
-            var description = document.getElementById('description');
+            let counter = document.getElementById('counter');
+            let photo = document.getElementById('photo');
+            let description = document.getElementById('description');
 
             counter.innerHTML = `Foto ${index + 1} van ${animals.length}`;
             photo.src = `https://xanderwemmers.nl/${animals[index]}.jpg`;

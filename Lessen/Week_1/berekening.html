@@ -71,15 +71,15 @@
     </style>
 
     <script>
-        var count = 0;
+        let count = 0;
 
         function calculate() {
-            var output = document.getElementById('output');
+            let output = document.getElementById('output');
 
-            var duration = parseInt(document.getElementById('duration').value);
-            var interest = parseFloat(document.getElementById('interest').value);
-            var amount = document.getElementById('amount').value;
-            var factor = 1 + (interest / 100);
+            let duration = parseInt(document.getElementById('duration').value);
+            let interest = parseFloat(document.getElementById('interest').value);
+            let amount = document.getElementById('amount').value;
+            let factor = 1 + (interest / 100);
 
             // Accept comma notated numbers
             amount = amount.replace(',', '.');
@@ -94,13 +94,13 @@
             output.className = '';
             output.innerHTML = '';
 
-            var today = new Date();
-            var start = today.getFullYear() + 1;
-            var end = start + duration;
+            let today = new Date();
+            let start = today.getFullYear() + 1;
+            let end = start + duration;
 
-            for (var i = start; i < end; i++) {
+            for (let i = start; i < end; i++) {
                 amount *= factor;
-                var displayAmount = amount.toFixed(2).replace('.', ',');
+                let displayAmount = amount.toFixed(2).replace('.', ',');
                 output.innerHTML += `<p>In ${i} heb je €${displayAmount}</p>`;
             }
 
