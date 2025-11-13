@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gegevens Xander</title>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/cupertino/jquery-ui.css" />
+
+    <script src="../common/load-navbar.js"></script>
+    <link rel="stylesheet" href="../common/style.css">
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+    <style>
+        body
+        {
+            font-family: arial;            
+        }
+
+        body.dark
+        {
+            background-color: black;
+            color: white;
+            font-family: fantasy;
+        }
+
+        body.light
+        {
+            background-color: antiquewhite;
+        }
+
+        body.green
+        {
+            background-color: green;
+            color: white;
+        }
+
+        body.blue
+        {
+            background-color: blue;
+            color: white;
+        }
+
+        label
+        {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+
+        input:invalid
+        {
+            border: 1px solid red;
+            background-color: pink;
+        }
+
+    </style>
+  
+    <script>
+        function saveData()
+        {
+            let invalids = $('input:invalid');
+
+            if (invalids.length > 0)
+            {
+                //alert('Het formulier is ongeldig');
+                $('#warning').dialog('open');
+
+                return;
+            }
+
+            // object
+            let data = { 
+                voornaam: document.getElementById('voornaam').value, 
+                achternaam: document.getElementById('achternaam').value,
+                geboortedatum: document.getElementById('geboortedatum').value,
+                kleur: document.getElementById('kleur').value,
+                postcode: document.getElementById('postcode').value,
+                land: document.getElementById('land').value,
+            };
+
+            localStorage.mijnData = JSON.stringify(data);
+        }
+
+        function loadData()
+        {
+            let data = JSON.parse(localStorage.mijnData);
+
+            document.getElementById('voornaam').value = data.voornaam;
+            document.getElementById('achternaam').value = data.achternaam;
+            document.getElementById('geboortedatum').value = data.geboortedatum;
+            document.getElementById('kleur').value = data.kleur;
+            document.getElementById('postcode').value = data.postcode;
+            document.getElementById('land').value = data.land;
+
+            document.getElementById('mijnBody').className = localStorage.theme;
+            $('#rad' + localStorage.theme).prop('checked', true);
+        }
+
+        function clearData()
+        {
+            $('input,select').val('');
+            $('input[type=radio]').prop('checked', false);
+            document.getElementById('mijnBody').className = '';
+        }        
+
+        function setTheme(theme)
+        {
+            document.getElementById('mijnBody').className = theme;
+            localStorage.theme = theme;
+        }
+
+        function showCountries(data) {
+            data.sort((a, b) => a.name.common.localeCompare(b.name.common));
+            data.forEach((country) => {
+                let el = document.createElement('option');
+                el.textContent = country.name.common;
+                $('#land').append(el);
+            });
+        }
+
+        function init()
+        {
+            $('#geboortedatum').datepicker({ 
+                dateFormat: 'dd-mm-yy', 
+                changeYear: true, 
+                changeMonth: true, 
+                yearRange: '-100:+0' 
+            });
+
+            $('button').button();
+
+            $.getJSON('https://restcountries.com/v3.1/all?fields=name', showCountries);
+            $('#warning').dialog({ autoOpen: false, modal: true });
+        }
+        
+    </script>
+</head>
+<body id="mijnBody" onload="init()">
+
+    <h1>Mijn gegevens</h1>
+
+    <label>Voornaam</label>
+
+    <input type="text" id="voornaam" required />
+    
+    <label>Achternaam</label>
+
+    <input type="text" id="achternaam" required />
+
+    <label>Geboortedatum</label>
+
+    <input type="text" id="geboortedatum" />
+
+    <label>Kleur</label>
+
+    <input type="color" id="kleur" />
+
+    <label>Postcode</label>
+
+    <input type="text" id="postcode" placeholder="1234AA" pattern="[0-9]{4} ?[A-z]{2}" />
+
+    <label>Land</label>
+
+    <select id="land"></select>
+
+    <label>Thema</label>
+
+    <input type="radio" name="theme" id="raddark" onclick="setTheme('dark')" />Dark
+    <input type="radio" name="theme" id="radlight" onclick="setTheme('light')" />Light
+    <input type="radio" name="theme" id="radgreen" onclick="setTheme('green')" />Green
+    <input type="radio" name="theme" id="radblue" onclick="setTheme('blue')" />Blue
+
+    <br />
+    <br />
+
+    <button onclick="saveData()">Opslaan</button>
+    <button onclick="loadData()">Laden</button>
+    <button onclick="clearData()">Wissen</button>
+
+    <div id="warning" title="Waarschuwing">
+        <p>
+            Pas op! Het formulier is ongeldig.
+        </p>
+    </div>
+    
+</body>
+</html>
