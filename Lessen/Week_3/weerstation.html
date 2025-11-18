@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+    <style>
+        body,
+        html {
+            margin: 0;
+            font-family: arial;
+        }
+
+        #map {
+            float: left;
+            width: 75%;
+            height: 100vh;
+        }
+
+        #rechts {
+            float: left;
+            overflow: auto;
+            height: 100vh;
+            text-align: center;
+            width: 25%;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin: 10px 0 2px;
+        }
+
+        h2
+        {
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            background-color: antiquewhite;
+        }
+        table
+        {
+            text-align: left;
+            margin: 0 auto;
+        }
+
+        td
+        {
+            padding: 5px;
+            white-space: nowrap;
+        }
+
+        td:first-child
+        {
+            width: 200px;
+        }
+
+    </style>
+
+    <script>
+
+        var map;
+        var lastMarker;
+
+        function initMap()
+        {
+            map = L.map('map').setView([52, 5], 7);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; XW 2025'
+            }).addTo(map);
+
+            map.on("click", mapClick);
+
+        }
+
+        function mapClick(e)
+        {
+            console.log(e.latlng.lat);
+            console.log(e.latlng.lng);
+
+            document.getElementById("latitude").value = e.latlng.lat;
+            document.getElementById("longitude").value = e.latlng.lng;
+
+            if (lastMarker)
+                map.removeLayer(lastMarker);
+
+            lastMarker = L.marker([e.latlng.lat, e.latlng.lng]).addTo(map);
+        }
+
+        function getWeather()
+        {
+            // Dit is mijn key. Een gratis account is te maken op weatherapi.com indien nodig
+            var myKey = '92ba8faaf60747e1b46141819252502';
+
+            var url = `https://api.weatherapi.com/v1/current.json`;
+
+            var lat = document.getElementById("latitude").value;
+            var lng = document.getElementById("longitude").value;
+
+            $.getJSON(url, { key: myKey, q: `${lat},${lng}` }, showWeather);
+        }
+
+        function showWeather(data)
+        {
+            console.log(data);
+
+             var html = "<table>";
+
+            // Locatie gegevens
+
+            for (var key in data.location)
+            {
+                html += "<tr>";
+                html += `<td>${key}</td>`;
+                html += `<td>${data.location[key]}</td>`;
+                html += "</tr>";
+            }
+            html += "</table";
+
+            if (lastMarker)
+                lastMarker.bindPopup(html).openPopup();
+
+            // Weer gegevens
+
+            html = `${data.current.condition.text}<br /><img src="${data.current.condition.icon}" />`
+    
+
+            html += "<table>";
+
+            for (var key in data.current)
+            {
+                html += "<tr>";
+
+                if (key != "condition")
+                {
+                    html += `<td>${key}</td>`;
+                    html += `<td>${data.current[key]}</td>`;
+                }
+
+                html += "</tr>";
+            }
+
+            html += "</table";
+
+            document.getElementById("currentInfo").innerHTML = html;
+
+
+        }
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
+    </script>
+</head>
+
+<body onload="initMap();">
+
+    <div id="map"></div>
+
+    <div id="rechts">
+
+        <label>Latitude</label>
+        <input type="text" id="latitude" />
+
+        <label>Longitude</label>
+        <input type="text" id="longitude" />
+
+        <br />
+        <br />
+
+        <button onclick="getWeather()">Get Weather</button>
+
+        <h2>Current</h2>
+
+        <div id="currentInfo"></div>
+
+    </div>
+
+</body>
+
+</html>

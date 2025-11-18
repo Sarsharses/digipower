@@ -49,6 +49,10 @@
             photo.alt = animals[index];
             description.innerHTML = animals[index];
         }
+
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
     </script>
 </head>
 <body onload="showPhoto()">

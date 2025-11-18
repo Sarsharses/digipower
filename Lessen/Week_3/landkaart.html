@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+    <style>
+        body {
+            text-align: center;
+            font-family: arial;
+        }
+
+        #map {
+            height: 600px;
+            width: 80%;
+            margin: auto;
+        }
+    </style>
+
+    <script>
+
+        // Scope: zichtbaarheid van een variabele
+        // Op deze plek is de scope globaal: zichtbaar in alle functies van deze pagina
+        let map;
+
+        function init() {
+            // Laad de kaart en zet het midden op de gegeven latitude en longitude. De zoom-factor is 7
+
+            map = L.map('map').setView([52, 5], 7);
+
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: 'XW &copy; 2025'
+            }).addTo(map);
+
+            L.marker([52, 5]).addTo(map).bindPopup('Een rotonde in de buurt van Utrecht');
+
+            // De radius is in meters. Dit wordt dus een rode cirkel met een radius van 10 km
+            L.circle([51, 5], {radius: 10000, color: 'red'}).addTo(map);
+
+            $.getJSON('https://xanderwemmers.nl/api/ns', showStations);
+        }
+
+        function showStations(data) {
+            for (let st of data) {
+                L.circle([st.Lat, st.Long], {radius: 500}).addTo(map).bindPopup(st.Name).on('click', () => gotoStation(st));
+            }
+        }
+
+        function gotoStation(station) {
+            map.flyTo([station.Lat, station.Long]);
+        }
+
+        function flyToRhodos() {
+            map.flyTo([36.444698175494814, 28.226696564042864], 13);
+        }
+
+        function flyToDublin() {
+            map.flyTo([53.345381762387326, -6.267171601575967], 13);
+        }
+
+        function flyHome() {
+            // deze functie bepaalt wat je locatie is. Gezien de privacy moet je straks wel een keer akkooord geven
+            navigator.geolocation.getCurrentPosition(showLocation);
+        }
+
+        function showLocation(data) {
+            console.log(data);
+
+            let home = [data.coords.latitude, data.coords.longitude];
+
+            map.flyTo(home, 15);
+
+            L.marker(home).addTo(map).bindPopup('Home sweet home');
+
+            L.circle(home, {radius: data.coords.accuracy}).addTo(map);
+        }
+
+        // 1) voeg jQuery verwijzing toe
+        // 2) roep in init() de Web Api aan https://xanderwemmers.nl/api/ns
+        // 3) in de functie showStations maak een for-lus die alle stations op de kaart laat zien als een circle
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
+    </script>
+</head>
+<body onload="init()">
+
+<h1>Landkaart</h1>
+
+<div id="map"></div>
+
+<br/>
+<br/>
+
+<button onclick="flyToRhodos()">Vlieg naar Rhodos</button>
+<button onclick="flyToDublin()">Vlieg naar Dublin</button>
+<button onclick="flyHome()">Vlieg naar huis</button>
+
+</body>
+</html>

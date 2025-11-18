@@ -140,6 +140,9 @@
                 met ${interest}% rente een totaal van: €${result.balance.toFixed(2)}</strong></p>`;
         }
 
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
     </script>
 </head>
 <body>

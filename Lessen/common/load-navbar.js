@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(html => {
             navbarContainer.innerHTML = html;
+            document.dispatchEvent(new CustomEvent('navbarLoaded'));
         })
         .catch(error => {
             console.error(error);

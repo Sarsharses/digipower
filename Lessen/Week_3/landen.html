@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            padding: 10px;
+            text-align: left;
+        }
+
+        td:nth-child(4) {
+            text-align: right;
+        }
+
+        tr:nth-child(even) {
+            background-color: antiquewhite;
+        }
+
+        tr:nth-child(odd) {
+            background-color: bisque;
+        }
+
+        tr:first-child {
+            background-color: crimson;
+            color: white;
+        }
+    </style>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+    <script src="../common/load-navbar.js"></script>
+
+    <script>
+        let allCountries;
+
+        function init() {
+            $.getJSON('https://restcountries.com/v3.1/all?fields=name,region,subregion,population,capital,flags', showCountries);
+        }
+
+        function sortByPopulation(data) {
+            data.sort((a, b) => b.population - a.population);
+        }
+
+        function sortByRegion(data) {
+            data.sort((a, b) => a.region.localeCompare(b.region));
+        }
+
+        function sortByCapital(data) {
+            data.sort(
+                (a, b) =>
+                    (a.capital?.[0] || '')
+                        .localeCompare((b.capital?.[0] || ''))
+            );
+        }
+
+        function showCountries(data) {
+            document.getElementById('output').innerHTML = '';
+
+            allCountries = data;
+            document.getElementById('countryCount').innerHTML = data.length;
+
+            sortByCapital(data);
+
+            let table = document.createElement('table');
+
+            let hr = document.createElement('tr');
+
+            let h1 = document.createElement('th');
+            h1.textContent = 'Naam';
+            hr.append(h1);
+
+            let h2 = document.createElement('th');
+            h2.textContent = 'Region';
+            hr.append(h2);
+
+            let h3 = document.createElement('th');
+            h3.textContent = 'Subregion';
+            hr.append(h3);
+
+            let h4 = document.createElement('th');
+            h4.textContent = 'Population';
+            hr.append(h4);
+
+            let h5 = document.createElement('th');
+            h5.textContent = 'Capital';
+            hr.append(h5);
+
+            let h6 = document.createElement('th');
+            h6.textContent = 'Flag';
+            hr.append(h6);
+
+            table.append(hr);
+
+            for (let c of data) {
+                let tr = document.createElement('tr');
+
+                let td1 = document.createElement('td');
+                td1.textContent = c['name']['common'];
+                tr.append(td1);
+
+                let td2 = document.createElement('td');
+                td2.textContent = c['region'];
+                tr.append(td2);
+
+                let td3 = document.createElement('td');
+                td3.textContent = c['subregion'];
+                tr.append(td3);
+
+                let td4 = document.createElement('td');
+                td4.textContent = c['population'].toLocaleString('nl');
+                tr.append(td4);
+
+                let td5 = document.createElement('td');
+                td5.textContent = c['capital'];
+                tr.append(td5);
+
+                let td6 = document.createElement('td');
+                //td6.textContent = c['flags']['svg'];
+                let img = document.createElement('img');
+                img.src = c['flags']['svg'];
+                img.width = 100;
+                img.title = c['flags']['alt'];
+                td6.append(img);
+                tr.append(td6);
+
+                table.append(tr);
+            }
+
+            document.getElementById('output').append(table);
+        }
+
+        function europeanCountries() {
+            let result = allCountries.filter(c => c['region'] === 'Europe');
+            showCountries(result);
+        }
+
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
+    </script>
+</head>
+<body onload="init()">
+
+<h1>Alle landen van de wereld</h1>
+<p id="aantal">Er zijn <span id="countryCount">0</span> landen</p>
+<button onclick="europeanCountries()">Europa</button>
+<div id="output"></div>
+
+</body>
+</html>

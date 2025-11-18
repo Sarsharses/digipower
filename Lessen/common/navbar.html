@@ -1,10 +1,42 @@
 <link rel="stylesheet" href="../common/style.css">
 
-<nav>
-    <a class="navItem" href="../Week_1/berekening.html">Berekening</a>
-    <a class="navItem" href="../Week_1/arrays.html">Dierentuin</a>
-    <a class="navItem" href="../Week_1/stemmen.html">Stemmen</a>
-    <a class="navItem" href="../Week_2/gegevens.html">Gegevens</a>
-    <a class="navItem" href="../Week_2/gegevens_xander.html">Gegevens Xander</a>
-    <a class="navItem" href="../Week_2/leaflet.html">Leaflet</a>
-</nav>
+<ul id="menu">
+    <li><div>Week 1</div>
+        <ul>
+            <li><div><a href="../Week_1/berekening.html">Berekening</a></div></li>
+            <li><div><a href="../Week_1/arrays.html">Dierentuin</a></div></li>
+            <li><div><a href="../Week_1/stemmen.html">Stemmen</a></div></li>
+        </ul></li>
+    <li><div>Week 2</div>
+        <ul>
+            <li><div><a href="../Week_2/gegevens.html">Gegevens</a></div></li>
+            <li><div><a href="../Week_2/gegevens_xander.html">Gegevens Xander</a></div></li>
+            <li><div><a href="../Week_2/demoJQuery.html">Demo JQuery</a></div></li>
+        </ul></li>
+    <li><div>Week 3</div>
+        <ul>
+            <li><div><a href="../Week_3/leaflet.html">Leaflet</a></div></li>
+            <li><div><a href="../Week_3/landen.html">Landen</a></div></li>
+            <li><div><a href="../Week_3/landkaart.html">Landkaart</a></div></li>
+            <li><div><a href="../Week_3/weerstation.html">Weerstation</a></div></li>
+            <li><div><a href="../Week_3/demoFuncties.html">Demo functies</a></div></li>
+        </ul>
+    </li>
+    <li><div>Week 4</div>
+        <ul>
+            <li><div>Car Hifi</div></li>
+        </ul>
+    </li>
+</ul>
+<hr>
+
+<style>
+    .ui-menu { width: 300px; }
+    #menu {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 2000;
+        background: white; /* optional: make sure it’s opaque */
+    }
+</style>

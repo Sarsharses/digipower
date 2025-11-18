@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script>
+
+        // console.log(Math.PI);
+        // console.log(Math.E);
+        //
+        // console.log(Math.sqrt(7));
+        // console.log(Math.sqrt(81));
+        // console.log(Math.sqrt(150));
+
+        // scope: zichtbaarheid van een variabele
+
+        // for (let teller=0; teller<10; teller++)
+        // {
+        //     console.log(teller);
+        //     console.log(Math.ceil(Math.random() * 75))
+        // }
+
+        // console.log('========')
+        // Met let hier een foutmelding, want teller is niet bekend buiten de for-lus
+        // Met var hier het getal 10, want het geheugen wordt niet opgeschoond
+        // console.log(teller);
+        //
+        let naam = 'Angelo Mennen';
+        //
+        // console.log(naam.toUpperCase());
+        // console.log(naam.toLowerCase());
+        // console.log(naam.length);
+        // console.log(naam.includes('xan'));
+
+        // let index = naam.indexOf(' ');
+        // als indexOf() niets vindt, dan is index -1
+
+        // console.log(naam.substring(0,index))
+        // console.log(naam.substring(index+1,naam.length))
+
+        let vandaag = new Date();
+
+        // console.log(vandaag.getDate()); // 17 november
+        // console.log(vandaag.getDay()); // 0=sunday, 1=monday
+        // console.log(vandaag.getMonth()); // 0=jan, 1=feb, 2=maart
+
+        // let dag = vandaag.getDate();
+        // vandaag.setDate(dag+100);
+        // console.log(vandaag);
+
+
+        function kwadraat(num) {
+            return num * num;
+        }
+
+        // deze functie heeft een optionele derde parameter
+        function optellen(eerste, tweede, derde = 0) {
+            return eerste + tweede + derde;
+        }
+
+        let x = 5;
+        // console.log(kwadraat(x));
+        // console.log(kwadraat(13));
+
+        console.log(optellen(20, 56));
+        console.log(optellen(20, 56, 54));
+
+        // arrow functions met de => syntax
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
+    </script>
+</head>
+<body>
+
+</body>
+</html>

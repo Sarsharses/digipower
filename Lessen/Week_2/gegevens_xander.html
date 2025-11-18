@@ -136,7 +136,9 @@
             $.getJSON('https://restcountries.com/v3.1/all?fields=name', showCountries);
             $('#warning').dialog({ autoOpen: false, modal: true });
         }
-        
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
     </script>
 </head>
 <body id="mijnBody" onload="init()">

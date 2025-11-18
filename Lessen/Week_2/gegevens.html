@@ -105,6 +105,10 @@
 
         // Initialize date picker
         dOB.datepicker();
+
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
     });
 </script>
 
