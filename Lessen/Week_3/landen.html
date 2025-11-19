@@ -57,6 +57,10 @@
 
         function init() {
             $.getJSON('https://restcountries.com/v3.1/all?fields=name,region,subregion,population,capital,flags', showCountries);
+
+            $('#regionSelect').on('change', function () {
+                filterByRegion(this.value);
+            });
         }
 
         function sortByPopulation() {
@@ -122,34 +126,37 @@
 
             if (!isInitialized) {
                 sortByPopulation();
-                isInitialized = true;
+                regionList = [];
             }
 
-            regionList = [];
             let table = document.createElement('table');
 
-            let el =
+            let hEl =
                 `
                 <tr>
+                    <th class="" onclick="()">Rank</th>
                     <th class="clickable" onclick="sortByName()">Name</th>
                     <th class="clickable" onclick="sortByRegion()">Region</th>
                     <th class="clickable" onclick="sortBySubRegion()">Subregion</th>
                     <th class="clickable" onclick="sortByPopulation()">Population</th>
                     <th class="clickable" onclick="sortByCapital()">Capital</th>
-                    <th class="clickable" onclick="">Flag</th>
+                    <th>Flag</th>
                 </tr>
                 `
 
-            $(table).append(el);
+            $(table).append(hEl);
+
+            let rank = 1;
 
             for (let c of data) {
-                if (!regionList.includes(c.region)) {
+                if (!regionList.includes(c.region) && !isInitialized) {
                     regionList.push(c.region);
                 }
 
-                let el =
+                let rEl =
                     `
                     <tr>
+                        <td>${rank}</td>
                         <td>${c.name.common}</td>
                         <td>${c.region}</td>
                         <td>${c.subregion}</td>
@@ -160,11 +167,16 @@
                         </td>
                     </tr>
                     `;
-                $(table).append(el);
+                $(table).append(rEl);
+                rank++;
             }
 
+            isInitialized = true;
+
             let regionSelect = $('#regionSelect');
-            regionSelect.html('');
+            regionSelect.html(`
+                <option value="">-- Select a region --</option>
+            `);
 
             regionList.forEach((r) => {
                 let option = `<option value="${r}">${r}</option>`
@@ -194,6 +206,12 @@
             showCountries(result);
         }
 
+        function filterByRegion(region) {
+            let result = currentCountries.filter(
+                c => c.region.toLowerCase().includes(region.toLowerCase())
+            );
+            showCountries(result);
+        }
 
         function resetCountries() {
             currentCountries = allCountries;
@@ -206,10 +224,10 @@
 
         /*
         * TODO
-        *  1) Dropdownlist met alle regions
-        *  2) Andere velden:
-        *   - c.area => bevolkingsdichtheid, tonen en sorteren
-        *  3) Als je op een land klikt dan is dat land geselecteerd en moet die in een andere kleur getoond worden
+        *  [x] 1) Dropdownlist met alle regions
+        *      2) Andere velden:
+        *           - c.area => bevolkingsdichtheid, tonen en sorteren
+        *      3) Als je op een land klikt dan is dat land geselecteerd en moet die in een andere kleur getoond worden
         * */
     </script>
 </head>
@@ -220,11 +238,12 @@
 <label for="countryInput">Country search:</label>
 <input id="countryInput" oninput="searchCountry()" type="text">
 <br><br>
-<button id="europaBtn" onclick="europeanCountries()">Europa</button>
+<button id="europeBtn" onclick="europeanCountries()">Europe</button>
 <button id="bigCountryBtn" onclick="bigCountries()">Big countries</button>
-<br><br>
+<br>
 <label for="regionSelect">Region select:</label>
-<select id="regionSelect"></select>
+<select id="regionSelect">
+</select>
 <br><br>
 <button id="resetBtn" onclick="resetCountries()">Reset country list</button>
 <br><br>
