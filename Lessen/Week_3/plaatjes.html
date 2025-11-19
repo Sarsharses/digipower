@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Plaatjes</title>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+    <script src="../common/load-navbar.js"></script>
+
+    <style>
+        svg {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="flagContainer"></div>
+<br>
+<div id="svgContainer">
+    <svg width="80" height="200">
+        <rect x="0" y="0"
+              height="200" width="80"
+              fill="black"
+              rx="20" ry="20"/>
+        <circle cx="40" cy="40"
+                fill="red" r="25"/>
+        <circle cx="40" cy="100"
+                fill="orange" r="25"/>
+        <circle cx="40" cy="160"
+                fill="green" r="25"/>
+    </svg>
+</div>
+
+<br>
+<svg width="150">
+    <rect fill="lightgray" height="25" width="150"/>
+    <rect id="progress" fill="green" height="25" width="25"/>
+</svg>
+
+<script>
+    $(() => {
+        let horizontalFlags = {
+            'nl': [
+                'red', 'white', 'blue'
+            ],
+            'de': [
+                'black', 'red', 'yellow'
+            ]
+        }
+
+        function createHorizontalFlag(code) {
+            let flagContainer = $('#flagContainer');
+            let colors = horizontalFlags[code];
+            if (!colors) return;
+
+            let svgNS = "http://www.w3.org/2000/svg";
+            let svg = document.createElementNS(svgNS, "svg");
+            svg.setAttribute("width", "300");
+            svg.setAttribute("height", colors.length * 50);
+
+            colors.forEach((color, index) => {
+                let rect = document.createElementNS(svgNS, "rect");
+                rect.setAttribute("x", 0);
+                rect.setAttribute("y", index * 50);
+                rect.setAttribute("width", 300);
+                rect.setAttribute("height", 50);
+                rect.setAttribute("fill", color);
+                svg.appendChild(rect);
+            });
+
+            let br = document.createElement('br');
+            flagContainer.append(svg);
+            flagContainer.append(br);
+        }
+
+        createHorizontalFlag('nl');
+        createHorizontalFlag('de');
+
+        const progressBar = document.getElementById('progress');
+        const maxWidth = 150;
+
+        let direction = 1;
+        let position = 0;
+        const barWidth = 40;
+        progressBar.setAttribute('width', barWidth);
+
+        setInterval(() => {
+            position += direction;
+            if (position + barWidth >= maxWidth || position <= 0) {
+                direction *= -1;
+            }
+            progressBar.setAttribute('x', position);
+        }, 20);
+
+
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
+    });
+</script>
+</body>
+</html>

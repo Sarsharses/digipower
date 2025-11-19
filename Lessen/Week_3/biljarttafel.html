@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Biljarttafel</title>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+    <script src="../common/load-navbar.js"></script>
+
+    <style>
+        canvas {
+            background-color: green;
+        }
+    </style>
+
+</head>
+<body>
+
+<h1>Biljarttafel</h1>
+
+<canvas id="canvas"></canvas>
+
+<script>
+    $(() => {
+        const c = document.getElementById('canvas');
+        const ctx = c.getContext('2d');
+        const cW = 400;
+        const cH = 180;
+
+        class ball {
+            constructor(color, x, y, radius) {
+                this.color = color;
+                this.x = x;
+                this.y = y;
+                this.r = radius;
+                this.xDir = 1;
+                this.yDir = 1;
+            }
+
+            drawBall() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+                this.x += this.xDir;
+                this.y += this.yDir;
+
+                if (this.x > cW - this.r || this.x === 0) {
+                    this.xDir *= -1;
+                }
+                if (this.y > cH - this.r || this.y === 0) {
+                    this.yDir *= -1;
+                }
+            }
+        }
+
+        // 4-row
+        let row4 = {
+            ball1: new ball('purple', 50, 50, 10),
+            ball2: new ball('blue', 50, 75, 10),
+            ball3: new ball('red', 50, 100, 10),
+            ball4: new ball('orange', 50, 125, 10)
+        };
+        // 3-row
+        let row3 = {
+            ball1: new ball('aliceblue', 75, 62, 10),
+            ball2: new ball('black', 75, 87, 10),
+            ball3: new ball('pink', 75, 112, 10),
+        };
+        // 2-row
+        let row2 = {
+            ball1: new ball('violet', 100, 75, 10),
+            ball2: new ball('grey', 100, 100, 10),
+        };
+        // 1-row
+        let row1 = {
+            ball1: new ball('white', 125, 87, 10),
+        };
+
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, cW, cH);
+
+            c.setAttribute('width', cW);
+            c.setAttribute('height', cH);
+
+            for (let ball of Object.values(row4)) {
+                ball.drawBall();
+            }
+            for (let ball of Object.values(row3)) {
+                ball.drawBall();
+            }
+            for (let ball of Object.values(row2)) {
+                ball.drawBall();
+            }
+            for (let ball of Object.values(row1)) {
+                ball.drawBall();
+            }
+        }
+
+        setInterval(drawCanvas, 10);
+
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
+    });
+</script>
+</body>
+</html>

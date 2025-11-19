@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Canvas</title>
+
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
+
+    <script src="../common/load-navbar.js"></script>
+
+</head>
+<body>
+<h1>Canvas demo</h1>
+<canvas id="canvas" style="border: 1px solid black; background: white;"></canvas>
+
+<script>
+    $(() => {
+        const cW = 500;
+        const cH = 300;
+        const batW = 10;
+        const batH = 40;
+        const batSpacing = 10;
+        const ballR = 5;
+
+        let enemyY = 10;
+        let enemyDir = 1;
+
+        function drawCanvas() {
+                        let c = document.getElementById('canvas');
+            c.setAttribute('width', cW);
+            c.setAttribute('height', cH);
+            let ctx = c.getContext('2d');
+
+            ctx.clearRect(0, 0, cW, cH);
+
+            // Left rect
+            ctx.beginPath();
+            ctx.rect(
+                batSpacing,
+                batSpacing,
+                batW,
+                batH
+            );
+            ctx.fill();
+
+            // Right rect
+            ctx.beginPath();
+            ctx.rect(
+                cW - batW - batSpacing,
+                enemyY,
+                batW,
+                batH
+            );
+            ctx.fill();
+
+            enemyY += enemyDir;
+            if (enemyY > cH - batH || enemyY === 0){
+                enemyDir *= -1;
+            }
+
+            // Ball
+            ctx.beginPath();
+            ctx.arc(
+                cW / 2,
+                cH / 2,
+                ballR,
+                0,
+                2 * Math.PI
+            )
+            ctx.fill();
+        }
+
+        setInterval(drawCanvas, 20);
+
+
+        document.addEventListener('navbarLoaded', () => {
+            $("#menu").menu();
+        });
+    });
+</script>
+</body>
+</html>
