@@ -16,6 +16,8 @@
     <style>
         canvas {
             background-color: green;
+            border: 20px solid saddlebrown;
+            border-radius: 20px;
         }
     </style>
 
@@ -26,21 +28,33 @@
 
 <canvas id="canvas"></canvas>
 
+<br><br>
+<button id="rndBallBtn">Add random ball</button>
+<button id="pauseBtn">Pause</button>
+<button id="kickOffBtn">Kickoff</button>
+
 <script>
     $(() => {
         const c = document.getElementById('canvas');
         const ctx = c.getContext('2d');
-        const cW = 400;
-        const cH = 180;
+        const cWidth = 400;
+        const cHeight = 200;
+        let vSlow = 1;
+        let randomBalls = [];
+
+        c.setAttribute('width', cWidth);
+        c.setAttribute('height', cHeight);
 
         class ball {
-            constructor(color, x, y, radius) {
+            constructor(color, x, y, radius, xSpeed, ySpeed) {
                 this.color = color;
                 this.x = x;
                 this.y = y;
                 this.r = radius;
                 this.xDir = 1;
                 this.yDir = 1;
+                this.xSpeed = xSpeed ?? 1;
+                this.ySpeed = ySpeed ?? 1;
             }
 
             drawBall() {
@@ -48,67 +62,167 @@
                 ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
                 ctx.fillStyle = this.color;
                 ctx.fill();
-                this.x += this.xDir;
-                this.y += this.yDir;
+                this.x += this.xDir * this.xSpeed * vSlow;
+                this.y += this.yDir * this.ySpeed * vSlow;
 
-                if (this.x > cW - this.r || this.x === 0) {
+                if (this.x > cWidth - this.r || this.x - this.r < 0) {
                     this.xDir *= -1;
                 }
-                if (this.y > cH - this.r || this.y === 0) {
+                if (this.y > cHeight - this.r || this.y - this.r < 0) {
                     this.yDir *= -1;
                 }
             }
         }
 
-        // 4-row
-        let row4 = {
-            ball1: new ball('purple', 50, 50, 10),
-            ball2: new ball('blue', 50, 75, 10),
-            ball3: new ball('red', 50, 100, 10),
-            ball4: new ball('orange', 50, 125, 10)
-        };
-        // 3-row
-        let row3 = {
-            ball1: new ball('aliceblue', 75, 62, 10),
-            ball2: new ball('black', 75, 87, 10),
-            ball3: new ball('pink', 75, 112, 10),
-        };
-        // 2-row
-        let row2 = {
-            ball1: new ball('violet', 100, 75, 10),
-            ball2: new ball('grey', 100, 100, 10),
-        };
-        // 1-row
-        let row1 = {
-            ball1: new ball('white', 125, 87, 10),
-        };
-
-
-        function drawCanvas() {
-            ctx.clearRect(0, 0, cW, cH);
-
-            c.setAttribute('width', cW);
-            c.setAttribute('height', cH);
-
-            for (let ball of Object.values(row4)) {
-                ball.drawBall();
-            }
-            for (let ball of Object.values(row3)) {
-                ball.drawBall();
-            }
-            for (let ball of Object.values(row2)) {
-                ball.drawBall();
-            }
-            for (let ball of Object.values(row1)) {
-                ball.drawBall();
+        let startingTriangle = {
+            // 4-row
+            row4: {
+                ball1: new ball('purple', 50, 50, 10),
+                ball2: new ball('blue', 50, 75, 10),
+                ball3: new ball('red', 50, 100, 10),
+                ball4: new ball('orange', 50, 125, 10)
+            },
+            // 3-row
+            row3: {
+                ball1: new ball('aliceblue', 75, 62, 10),
+                ball2: new ball('black', 75, 87, 10),
+                ball3: new ball('pink', 75, 112, 10),
+            },
+            // 2-row
+            row2: {
+                ball1: new ball('violet', 100, 75, 10),
+                ball2: new ball('grey', 100, 100, 10),
+            },
+            // 1-row
+            row1: {
+                ball1: new ball('white', 125, 87, 10),
             }
         }
 
+        let startingTriangleWithRandomSpeeds = {
+            // 4-row
+            row4: {
+                ball1: new ball('purple', 50, 50, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball2: new ball('blue', 50, 75, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball3: new ball('red', 50, 100, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball4: new ball('orange', 50, 125, 10, Math.random() * 6 - 3, Math.random() * 6 - 3)
+            },
+            // 3-row
+            row3: {
+                ball1: new ball('aliceblue', 75, 62, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball2: new ball('black', 75, 87, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball3: new ball('pink', 75, 112, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+            },
+            // 2-row
+            row2: {
+                ball1: new ball('violet', 100, 75, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball2: new ball('grey', 100, 100, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+            },
+            // 1-row
+            row1: {
+                ball1: new ball('white', 125, 87, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+            }
+        }
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, cWidth, cHeight);
+
+            for (let row of Object.values(startingTriangle)) {
+                for (let ball of Object.values(row)) {
+                    ball.drawBall();
+                }
+            }
+
+            for (let ball of randomBalls) {
+                ball.drawBall();
+            }
+
+            vSlow -= 0.0005;
+            if (vSlow < 0) vSlow = 0;
+        }
+
+        // HELPERS
+        function getRandomColor() {
+            let letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // LISTENERS
+        $('#rndBallBtn').on('click', function () {
+            randomBalls.push(
+                new ball(
+                    getRandomColor(),
+                    Math.random() * (cWidth - 20) + 10,
+                    Math.random() * (cHeight - 20) + 10,
+                    10,
+                    (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 2),
+                    (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 2),
+                )
+            );
+        });
+
+        $('#kickOffBtn').on('click', function () {
+            if (vSlow === 0) vSlow = 1;
+        });
+
+        $('#pauseBtn').on('click', function () {
+            vSlow = 0;
+        });
+
+        $('#canvas').on('click', function (event) {
+            const rect = this.getBoundingClientRect();
+            const borderWidth = 20;
+            const x = event.clientX - rect.left - borderWidth;
+            const y = event.clientY - rect.top - borderWidth;
+
+            // check if a click hits any randomBalls ball
+            for (let i = randomBalls.length - 1; i >= 0; i--) {
+                const b = randomBalls[i];
+                const dx = x - b.x;
+                const dy = y - b.y;
+                if (Math.sqrt(dx * dx + dy * dy) <= b.r) {
+                    randomBalls.splice(i, 1);
+                    break;
+                }
+            }
+
+            // check if a click hits any of the startingTriangle balls
+            for (const rowName in startingTriangle) {
+                const row = startingTriangle[rowName];
+                for (const ballName in row) {
+                    const b = row[ballName];
+                    const dx = x - b.x;
+                    const dy = y - b.y;
+                    if (Math.sqrt(dx * dx + dy * dy) <= b.r) {
+                        delete row[ballName];
+                        return;
+                    }
+                }
+            }
+        });
+
+        // DRAW
         setInterval(drawCanvas, 10);
 
+        // NAVBAR INIT
         document.addEventListener('navbarLoaded', () => {
             $("#menu").menu();
         });
+
+        /*
+            TODO
+            1) [x] Vertraging ballen
+            2) [x] Bal verwijderen [Klikken op een bal]
+            3) [x] Bal toevoegen (random) [Knop onderin met random positie]
+            4) [x] Pauze-knop
+            5) [ ] Save + load
+            6) [x] Kickoff (Als alle ballen stil liggen)
+            7) [ ] Gaten in de tafel (pool/snooker)
+         */
     });
 </script>
 </body>

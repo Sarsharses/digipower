@@ -36,6 +36,10 @@
             background-color: crimson;
             color: white;
         }
+
+        tr.selected {
+            background-color: lightgreen;
+        }
     </style>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.14.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
@@ -47,60 +51,67 @@
         let currentCountries;
         let isInitialized = false;
 
-        let populationSort = false;
-        let regionSort = false;
-        let subRegionSort = false;
-        let capitalSort = false;
-        let nameSort = false;
+        let sortFlags = {
+            population: false,
+            region: false,
+            subRegion: false,
+            capital: false,
+            area: false,
+            density: false,
+            name: false
+        };
 
         let regionList = [];
 
         function init() {
-            $.getJSON('https://restcountries.com/v3.1/all?fields=name,region,subregion,population,capital,flags', showCountries);
+            $.getJSON('https://restcountries.com/v3.1/all?fields=name,region,subregion,population,capital,flags,area', showCountries);
 
             $('#regionSelect').on('change', function () {
                 filterByRegion(this.value);
             });
         }
 
+        /*
+         * SORTERS
+         */
         function sortByPopulation() {
             if (!isInitialized) {
                 currentCountries.sort((a, b) => b.population - a.population);
             } else {
-                populationSort
+                sortFlags.population
                     ? currentCountries.sort((a, b) => b.population - a.population)
                     : currentCountries.sort((a, b) => a.population - b.population);
-                populationSort = !populationSort;
+                sortFlags.population = !sortFlags.population;
                 showCountries(currentCountries);
             }
         }
 
         function sortByName() {
-            nameSort
+            sortFlags.name
                 ? currentCountries.sort((a, b) => b.name.common.localeCompare(a.name.common))
                 : currentCountries.sort((a, b) => a.name.common.localeCompare(b.name.common));
-            nameSort = !nameSort;
+            sortFlags.name = !sortFlags.name;
             showCountries(currentCountries);
         }
 
         function sortByRegion() {
-            regionSort
+            sortFlags.region
                 ? currentCountries.sort((a, b) => b.region.localeCompare(a.region))
                 : currentCountries.sort((a, b) => a.region.localeCompare(b.region));
-            regionSort = !regionSort;
+            sortFlags.region = !sortFlags.region;
             showCountries(currentCountries);
         }
 
         function sortBySubRegion() {
-            subRegionSort
+            sortFlags.subRegion
                 ? currentCountries.sort((a, b) => b.subregion.localeCompare(a.subregion))
                 : currentCountries.sort((a, b) => a.subregion.localeCompare(b.subregion));
-            subRegionSort = !subRegionSort;
+            sortFlags.subRegion = !sortFlags.subRegion;
             showCountries(currentCountries);
         }
 
         function sortByCapital() {
-            capitalSort
+            sortFlags.capital
                 ? currentCountries.sort(
                     (a, b) =>
                         (b.capital?.[0] || '')
@@ -111,13 +122,31 @@
                         (a.capital?.[0] || '')
                             .localeCompare((b.capital?.[0] || ''))
                 );
-            capitalSort = !capitalSort;
+            sortFlags.capital = !sortFlags.capital;
             showCountries(currentCountries);
         }
 
+        function sortByArea() {
+            sortFlags.area
+                ? currentCountries.sort((a, b) => b.area - a.area)
+                : currentCountries.sort((a, b) => a.area - b.area);
+            sortFlags.area = !sortFlags.area;
+            showCountries(currentCountries);
+        }
+
+        function sortByDensity() {
+            sortFlags.density
+                ? currentCountries.sort((a, b) => (b.population / b.area) - (a.population / a.area))
+                : currentCountries.sort((a, b) => (a.population / a.area) - (b.population / b.area));
+            sortFlags.density = !sortFlags.density;
+            showCountries(currentCountries);
+        }
+
+        /*
+         * TABLE CREATOR
+         */
         function showCountries(data) {
             document.getElementById('output').innerHTML = '';
-
             if (allCountries == null) {
                 allCountries = data;
                 currentCountries = data;
@@ -126,11 +155,23 @@
 
             if (!isInitialized) {
                 sortByPopulation();
-                regionList = [];
             }
 
             let table = document.createElement('table');
+            createHeaderRow(table);
 
+            let rank = 1;
+            for (let c of data) {
+                createCountryRow(table, rank, c);
+                rank++;
+            }
+
+            isInitialized = true;
+            populateRegionSelect();
+            document.getElementById('output').append(table);
+        }
+
+        function createHeaderRow(table) {
             let hEl =
                 `
                 <tr>
@@ -140,38 +181,38 @@
                     <th class="clickable" onclick="sortBySubRegion()">Subregion</th>
                     <th class="clickable" onclick="sortByPopulation()">Population</th>
                     <th class="clickable" onclick="sortByCapital()">Capital</th>
+                    <th class="clickable" onclick="sortByArea()">Area</th>
+                    <th class="clickable" onclick="sortByDensity()">Density</th>
                     <th>Flag</th>
                 </tr>
                 `
 
             $(table).append(hEl);
+        }
 
-            let rank = 1;
-
-            for (let c of data) {
-                if (!regionList.includes(c.region) && !isInitialized) {
-                    regionList.push(c.region);
-                }
-
-                let rEl =
-                    `
-                    <tr>
+        function createCountryRow(table, rank, data) {
+            let rEl =
+                `
+                    <tr onclick="selectRow(this)">
                         <td>${rank}</td>
-                        <td>${c.name.common}</td>
-                        <td>${c.region}</td>
-                        <td>${c.subregion}</td>
-                        <td>${c.population.toLocaleString('nl')}</td>
-                        <td>${c.capital}</td>
+                        <td>${data.name.common}</td>
+                        <td>${data.region}</td>
+                        <td>${data.subregion}</td>
+                        <td>${data.population.toLocaleString('nl')}</td>
+                        <td>${data.capital}</td>
+                        <td>${data.area.toFixed(2)} square km</td>
+                        <td>${(data.population / data.area).toFixed(2)} people/square km</td>
                         <td>
-                            <img src="${c.flags.svg}" width="100" title="${c.flags.alt}">
+                            <img src="${data.flags.svg}" width="100" title="${data.flags.alt}">
                         </td>
                     </tr>
                     `;
-                $(table).append(rEl);
-                rank++;
-            }
+            $(table).append(rEl);
+        }
 
-            isInitialized = true;
+        function populateRegionSelect() {
+            let allRegions = currentCountries.map(c => c.region);
+            regionList = new Set(allRegions);
 
             let regionSelect = $('#regionSelect');
             regionSelect.html(`
@@ -182,42 +223,64 @@
                 let option = `<option value="${r}">${r}</option>`
                 regionSelect.append(option);
             });
-            document.getElementById('output').append(table);
         }
 
+        /*
+         * FILTERS
+         */
         function europeanCountries() {
-            let result = currentCountries.filter(c => c['region'] === 'Europe');
-            currentCountries = result;
-            showCountries(result);
+            currentCountries = currentCountries.filter(c => c['region'] === 'Europe');
+            showCountries(currentCountries);
         }
 
         function bigCountries() {
-            let result = currentCountries.filter(c => c['population'] > 100_000_000);
-            currentCountries = result;
-            showCountries(result);
+            currentCountries = currentCountries.filter(c => c['population'] > 100_000_000);
+            showCountries(currentCountries);
         }
 
         function searchCountry() {
             let searchString = $('#countryInput').val()
                 .toLowerCase();
-            let result = currentCountries.filter(
+            currentCountries = currentCountries.filter(
                 c => c.name.common.toLowerCase().includes(searchString)
             );
-            showCountries(result);
-        }
-
-        function filterByRegion(region) {
-            let result = currentCountries.filter(
-                c => c.region.toLowerCase().includes(region.toLowerCase())
-            );
-            showCountries(result);
-        }
-
-        function resetCountries() {
-            currentCountries = allCountries;
             showCountries(currentCountries);
         }
 
+        function filterByRegion(region) {
+            currentCountries = currentCountries.filter(
+                c => c.region.toLowerCase().includes(region.toLowerCase())
+            );
+            showCountries(currentCountries);
+        }
+
+        /*
+         * ROW SELECTOR
+         */
+        function selectRow(tr) {
+            const row = $(tr);
+
+            if (row.hasClass('selected')) {
+                row.removeClass('selected');
+                return;
+            }
+
+            $('tr').removeClass('selected');
+            row.addClass('selected');
+        }
+
+        /*
+         * RESET
+         */
+        function resetCountries() {
+            currentCountries = allCountries;
+            $('#countryInput').val('');
+            showCountries(currentCountries);
+        }
+
+        /*
+         * NAVBAR INIT
+         */
         document.addEventListener('navbarLoaded', () => {
             $("#menu").menu();
         });
@@ -225,7 +288,7 @@
         /*
         * TODO
         *  [x] 1) Dropdownlist met alle regions
-        *      2) Andere velden:
+        *  [x] 2) Andere velden:
         *           - c.area => bevolkingsdichtheid, tonen en sorteren
         *      3) Als je op een land klikt dan is dat land geselecteerd en moet die in een andere kleur getoond worden
         * */
@@ -237,20 +300,27 @@
     <circle cx="50" cy="50" r="40" stroke="red" stroke-width="4" fill="yellow"/>
 </svg>
 
-<h1>Alle landen van de wereld</h1>
-<p id="aantal">Er zijn <span id="countryCount">0</span> landen</p>
-<label for="countryInput">Country search:</label>
-<input id="countryInput" oninput="searchCountry()" type="text">
-<br><br>
-<button id="europeBtn" onclick="europeanCountries()">Europe</button>
-<button id="bigCountryBtn" onclick="bigCountries()">Big countries</button>
-<br>
-<label for="regionSelect">Region select:</label>
-<select id="regionSelect">
-</select>
-<br><br>
-<button id="resetBtn" onclick="resetCountries()">Reset country list</button>
-<br><br>
+<div id="filterContainer">
+    <h1>Alle landen van de wereld</h1>
+
+    <p id="aantal">Er zijn <span id="countryCount">0</span> landen</p>
+
+    <label for="countryInput">Country search:</label>
+    <input id="countryInput" oninput="searchCountry()" type="text">
+    <br><br>
+
+    <button id="europeBtn" onclick="europeanCountries()">Europe</button>
+    <button id="bigCountryBtn" onclick="bigCountries()">Big countries</button>
+    <br>
+
+    <label for="regionSelect">Region select:</label>
+    <select id="regionSelect"></select>
+    <br><br>
+
+    <button id="resetBtn" onclick="resetCountries()">Reset country list</button>
+    <br><br>
+</div>
+
 <div id="output"></div>
 
 </body>
