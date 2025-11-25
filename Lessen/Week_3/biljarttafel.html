@@ -19,6 +19,10 @@
             border: 20px solid saddlebrown;
             border-radius: 20px;
         }
+
+        button {
+            width: 120px;
+        }
     </style>
 
 </head>
@@ -31,26 +35,54 @@
 <br><br>
 <button id="rndBallBtn">Add random ball</button>
 <button id="pauseBtn">Pause</button>
-<button id="kickOffBtn">Kickoff</button>
+<button id="kickOffBtn" disabled>Kickoff</button>
+<br><br>
+<button id="saveBtn">Save</button>
+<button id="loadBtn">Load</button>
 
 <script>
     $(() => {
+        let pauseBtn = $('#pauseBtn');
+        let kickOffBtn = $('#kickOffBtn');
+
         const c = document.getElementById('canvas');
         const ctx = c.getContext('2d');
+
         const cWidth = 400;
         const cHeight = 200;
-        let vSlow = 1;
-        let randomBalls = [];
+
+        const ballRadius = 10;
+        const cornerHoleRadius = 20;
+        const sideHoleRadius = 15;
+
+        let vInit = 2
+        let vSlow = vInit;
+        let lastV = 0;
+
+        let ballData = [];
+
+        let gamePaused = false;
+        let gameInitialized = false;
 
         c.setAttribute('width', cWidth);
         c.setAttribute('height', cHeight);
 
-        class ball {
+        class Hole {
+            constructor(x, y, radius) {
+                Object.assign(this, {x, y, radius});
+            }
+
+            drawHole() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+                ctx.fillStyle = 'black'
+                ctx.fill();
+            }
+        }
+
+        class Ball {
             constructor(color, x, y, radius, xSpeed, ySpeed) {
-                this.color = color;
-                this.x = x;
-                this.y = y;
-                this.r = radius;
+                Object.assign(this, {color, x, y, radius});
                 this.xDir = 1;
                 this.yDir = 1;
                 this.xSpeed = xSpeed ?? 1;
@@ -59,89 +91,130 @@
 
             drawBall() {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.r, 0, 2 * Math.PI);
+                ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
                 ctx.fillStyle = this.color;
                 ctx.fill();
                 this.x += this.xDir * this.xSpeed * vSlow;
                 this.y += this.yDir * this.ySpeed * vSlow;
 
-                if (this.x > cWidth - this.r || this.x - this.r < 0) {
+                if (this.x > cWidth - this.radius || this.x - this.radius < 0) {
                     this.xDir *= -1;
                 }
-                if (this.y > cHeight - this.r || this.y - this.r < 0) {
+                if (this.y > cHeight - this.radius || this.y - this.radius < 0) {
                     this.yDir *= -1;
                 }
             }
         }
 
+        let holes = [
+            // Corners
+            new Hole(5, 5, cornerHoleRadius),
+            new Hole(5, 195, cornerHoleRadius),
+            new Hole(395, 195, cornerHoleRadius),
+            new Hole(395, 5, cornerHoleRadius),
+            // Mids
+            new Hole(5, cHeight / 2, sideHoleRadius),
+            new Hole(395, cHeight / 2, sideHoleRadius),
+            // Sides
+            new Hole(cWidth / 3, 5, sideHoleRadius),
+            new Hole(cWidth / 3 * 2, 5, sideHoleRadius),
+            new Hole(cWidth / 3, 195, sideHoleRadius),
+            new Hole(cWidth / 3 * 2, 195, sideHoleRadius),
+        ];
+
         let startingTriangle = {
             // 4-row
             row4: {
-                ball1: new ball('purple', 50, 50, 10),
-                ball2: new ball('blue', 50, 75, 10),
-                ball3: new ball('red', 50, 100, 10),
-                ball4: new ball('orange', 50, 125, 10)
+                ball1: new Ball('purple', 50, 50, ballRadius),
+                ball2: new Ball('blue', 50, 75, ballRadius),
+                ball3: new Ball('red', 50, 100, ballRadius),
+                ball4: new Ball('orange', 50, 125, ballRadius)
             },
             // 3-row
             row3: {
-                ball1: new ball('aliceblue', 75, 62, 10),
-                ball2: new ball('black', 75, 87, 10),
-                ball3: new ball('pink', 75, 112, 10),
+                ball1: new Ball('aliceblue', 75, 62, ballRadius),
+                ball2: new Ball('black', 75, 87, ballRadius),
+                ball3: new Ball('pink', 75, 112, ballRadius),
             },
             // 2-row
             row2: {
-                ball1: new ball('violet', 100, 75, 10),
-                ball2: new ball('grey', 100, 100, 10),
+                ball1: new Ball('violet', 100, 75, ballRadius),
+                ball2: new Ball('grey', 100, 100, ballRadius),
             },
             // 1-row
             row1: {
-                ball1: new ball('white', 125, 87, 10),
+                ball1: new Ball('white', 125, 87, ballRadius),
             }
         }
-
         let startingTriangleWithRandomSpeeds = {
             // 4-row
             row4: {
-                ball1: new ball('purple', 50, 50, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
-                ball2: new ball('blue', 50, 75, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
-                ball3: new ball('red', 50, 100, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
-                ball4: new ball('orange', 50, 125, 10, Math.random() * 6 - 3, Math.random() * 6 - 3)
+                ball1: new Ball('purple', 50, 50, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball2: new Ball('blue', 50, 75, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball3: new Ball('red', 50, 100, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball4: new Ball('orange', 50, 125, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3)
             },
             // 3-row
             row3: {
-                ball1: new ball('aliceblue', 75, 62, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
-                ball2: new ball('black', 75, 87, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
-                ball3: new ball('pink', 75, 112, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball1: new Ball('aliceblue', 75, 62, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball2: new Ball('black', 75, 87, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball3: new Ball('pink', 75, 112, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
             },
             // 2-row
             row2: {
-                ball1: new ball('violet', 100, 75, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
-                ball2: new ball('grey', 100, 100, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball1: new Ball('violet', 100, 75, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball2: new Ball('grey', 100, 100, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
             },
             // 1-row
             row1: {
-                ball1: new ball('white', 125, 87, 10, Math.random() * 6 - 3, Math.random() * 6 - 3),
+                ball1: new Ball('white', 125, 87, ballRadius, Math.random() * 6 - 3, Math.random() * 6 - 3),
             }
         }
 
-        function drawCanvas() {
-            ctx.clearRect(0, 0, cWidth, cHeight);
-
-            for (let row of Object.values(startingTriangle)) {
-                for (let ball of Object.values(row)) {
-                    ball.drawBall();
-                }
+        function drawScreen() {
+            drawCanvas();
+            if (!gameInitialized) {
+                drawStartingTriangle();
+                gameInitialized = true;
             }
-
-            for (let ball of randomBalls) {
-                ball.drawBall();
-            }
-
-            vSlow -= 0.0005;
-            if (vSlow < 0) vSlow = 0;
+            drawHoles();
+            drawBalls();
+            slowBalls();
         }
 
         // HELPERS
+        function drawCanvas() {
+            ctx.clearRect(0, 0, cWidth, cHeight);
+        }
+        function drawStartingTriangle() {
+            for (let row of Object.values(startingTriangle)) {
+                for (let ball of Object.values(row)) {
+                    ballData.push(ball);
+                }
+            }
+        }
+
+        function drawHoles() {
+            for (let hole of Object.values(holes)) {
+                hole.drawHole();
+                checkBallHits(hole.x, hole.y);
+            }
+        }
+
+        function drawBalls() {
+            for (let ball of ballData) {
+                ball.drawBall();
+            }
+        }
+
+        function slowBalls() {
+            vSlow -= 0.001;
+            if (vSlow < 0) {
+                vSlow = 0;
+                kickOffBtn.prop('disabled', false);
+            }
+        }
+
         function getRandomColor() {
             let letters = '0123456789ABCDEF';
             let color = '#';
@@ -151,26 +224,85 @@
             return color;
         }
 
+        function drawLoadedBalls(data) {
+            for (let b of Object.values(data)) {
+                const loadedBall = new Ball(
+                    b.color,
+                    b.x,
+                    b.y,
+                    b.radius,
+                    b.xSpeed,
+                    b.ySpeed
+                );
+                loadedBall.xDir = b.xDir;
+                loadedBall.yDir = b.yDir;
+                ballData.push(loadedBall);
+            }
+        }
+
+        function checkBallHits(x, y) {
+            for (let i = ballData.length - 1; i >= 0; i--) {
+                const b = ballData[i];
+                const dx = x - b.x;
+                const dy = y - b.y;
+                if (Math.sqrt(dx * dx + dy * dy) <= b.radius) {
+                    ballData.splice(i, 1);
+                    break;
+                }
+            }
+        }
+
         // LISTENERS
         $('#rndBallBtn').on('click', function () {
-            randomBalls.push(
-                new ball(
+            ballData.push(
+                new Ball(
                     getRandomColor(),
                     Math.random() * (cWidth - 20) + 10,
                     Math.random() * (cHeight - 20) + 10,
-                    10,
+                    ballRadius,
                     (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 2),
                     (Math.random() < 0.5 ? -1 : 1) * (Math.random() * 2),
                 )
             );
         });
 
-        $('#kickOffBtn').on('click', function () {
-            if (vSlow === 0) vSlow = 1;
+        kickOffBtn.on('click', function () {
+            kickOffBtn.prop('disabled', true);
+            if (vSlow === 0) vSlow = vInit;
+            if (gamePaused) {
+                gamePaused = !gamePaused;
+                pauseBtn.html('Pause');
+            }
         });
 
-        $('#pauseBtn').on('click', function () {
-            vSlow = 0;
+        pauseBtn.on('click', function () {
+            if (!gamePaused) {
+                pauseBtn.html('Play');
+                lastV = vSlow;
+                vSlow = 0;
+            } else {
+                pauseBtn.html('Pause');
+                vSlow = lastV;
+            }
+            gamePaused = !gamePaused;
+        });
+
+        $('#saveBtn').on('click', function () {
+            localStorage.setItem('vSlow', vSlow);
+            localStorage.setItem('ballData', JSON.stringify(ballData));
+        });
+
+        $('#loadBtn').on('click', function () {
+            const raw = localStorage.getItem('ballData');
+            const data = raw ? JSON.parse(raw) : null;
+            vSlow = localStorage.getItem('vSlow');
+
+            if (!data) {
+                return;
+            }
+
+            ballData = [];
+            drawLoadedBalls(data);
         });
 
         $('#canvas').on('click', function (event) {
@@ -179,34 +311,11 @@
             const x = event.clientX - rect.left - borderWidth;
             const y = event.clientY - rect.top - borderWidth;
 
-            // check if a click hits any randomBalls ball
-            for (let i = randomBalls.length - 1; i >= 0; i--) {
-                const b = randomBalls[i];
-                const dx = x - b.x;
-                const dy = y - b.y;
-                if (Math.sqrt(dx * dx + dy * dy) <= b.r) {
-                    randomBalls.splice(i, 1);
-                    break;
-                }
-            }
-
-            // check if a click hits any of the startingTriangle balls
-            for (const rowName in startingTriangle) {
-                const row = startingTriangle[rowName];
-                for (const ballName in row) {
-                    const b = row[ballName];
-                    const dx = x - b.x;
-                    const dy = y - b.y;
-                    if (Math.sqrt(dx * dx + dy * dy) <= b.r) {
-                        delete row[ballName];
-                        return;
-                    }
-                }
-            }
+            checkBallHits(x, y);
         });
 
         // DRAW
-        setInterval(drawCanvas, 10);
+        setInterval(drawScreen, 10);
 
         // NAVBAR INIT
         document.addEventListener('navbarLoaded', () => {
@@ -219,9 +328,9 @@
             2) [x] Bal verwijderen [Klikken op een bal]
             3) [x] Bal toevoegen (random) [Knop onderin met random positie]
             4) [x] Pauze-knop
-            5) [ ] Save + load
+            5) [x] Save + load
             6) [x] Kickoff (Als alle ballen stil liggen)
-            7) [ ] Gaten in de tafel (pool/snooker)
+            7) [x] Gaten in de tafel (pool/snooker)
          */
     });
 </script>
