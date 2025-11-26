@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Restaurant</title>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+
+    <!-- BS5   -->
+    <link rel="stylesheet" href="../common/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+            crossorigin="anonymous"></script>
+    <!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"-->
+    <!--          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">-->
+
+    <!-- Font   -->
+    <link href='https://fonts.googleapis.com/css?family=Allison' rel='stylesheet'>
+
+    <style>
+        body {
+            background-color: darkslategray;
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Allison', serif;
+            font-size: 80px;
+        }
+
+        .card-header {
+            background-color: lightgray;
+        }
+
+        h3 {
+            margin: 5px;
+            padding: 4px;
+            border-top: 1px grey dashed;
+            border-bottom: 1px grey dashed;
+        }
+
+        #basketList {
+            border: 1px grey dashed;
+        }
+    </style>
+</head>
+<body>
+<main class="flex-shrink-0">
+    <div class="row">
+        <div class="col-md-10 offset-md-1 my-3">
+            <div class="card">
+                <div class="card-header">
+                    <h1>Chez Lars</h1>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-7 p4">
+                            <div id="starterEl">
+                                <h3>- Voorgerechten -</h3>
+                            </div>
+                            <div id="mainsEl">
+                                <h3>- Hoofdgerechten -</h3>
+                            </div>
+                            <div id="dessertsEl">
+                                <h3>- Desserts -</h3>
+                            </div>
+                            <div id="drinksEl">
+                                <h3>- Drank -</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-5 p4">
+                            <div id="openBillEl">
+                                <label for="billName" class="fw-bold">Open een nieuwe rekening</label><br>
+                                <div class="d-flex align-items-center">
+                                    <input type="text" id="billName" class="form-control me-2"
+                                           placeholder="Rekeningnaam">
+                                    <button id="openBillBtn" class="btn btn-secondary btn-sm">Open</button>
+                                </div>
+                            </div>
+
+                            <div id="basketListContainer" style="display: none;">
+                                <h3>Goedenavond, <span id="createdBillUserName"></span></h3>
+                                <small id="customerGuid" style="color:grey;"></small>
+                                <hr>
+                                Je huidige bestelling:
+                                <div id="basketListEl" class="p-4 m-4 pt-0 mt-0">
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    $(() => {
+        let allItemsData = [];
+        const starterData = [];
+        const mainsData = [];
+        const dessertsData = [];
+        const drinksData = [];
+
+        let basketList = [];
+        let basketPrice = 0;
+
+        const openBillEl = $('#openBillEl');
+        const openBillName = $('#billName');
+        const openBillBtn = $('#openBillBtn');
+        const createdBillUserName = $('#createdBillUserName');
+        const customerGuid = $('#customerGuid');
+
+        let basketListContainer = $('#basketListContainer');
+
+        // Getters
+        async function getMenuSection(type, targetArray) {
+            try {
+                const response = await fetch(`https://xanderwemmers.nl/api/restaurant/${type}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}`);
+                }
+                const data = await response.json();
+                data.forEach(item => targetArray.push(item));
+            } catch (err) {
+                console.error(`Failed to load ${type} data:`, err);
+            }
+        }
+
+        async function getMenuData() {
+            await Promise.all([
+                getMenuSection('starters', starterData),
+                getMenuSection('mains', mainsData),
+                getMenuSection('desserts', dessertsData),
+                getMenuSection('drinks', drinksData)
+            ]);
+        }
+
+        // Setters
+        function showMenuSection(elementId, dataArray) {
+            const sectionEl = document.getElementById(elementId);
+
+            dataArray.forEach((item) => {
+                allItemsData.push(item);
+                const menuItem = createItemRow(item);
+                $(sectionEl).append(menuItem);
+            });
+        }
+
+        function showItems() {
+            showMenuSection('starterEl', starterData);
+            showMenuSection('mainsEl', mainsData);
+            showMenuSection('dessertsEl', dessertsData);
+            showMenuSection('drinksEl', drinksData);
+        }
+
+        // Helpers
+        function createItemRow(item) {
+            return `
+                <div class="row d-flex align-items-center border-bottom py-1">
+                    <div class="col-auto">
+                        <button class="btn btn-secondary btn-sm fw-bold itemBtn"
+                            id="menuItem-${item.ID}"
+                            onclick="addToBasket(${item.ID})"
+                            disabled>
+                                +
+                            </button>
+                    </div>
+                    <div class="col d-flex justify-content-between text-start align-items-center">
+                        <span>
+                            <span class="fw-bold">${item.Description}</span><br>
+                            <span class="fst-italic">${item.Extra}</span>
+                        </span>
+                        <span class="text-end fw-semibold">&euro;${item.Price}</span>
+                    </div>
+                </div>
+            `
+        }
+
+        function createBasketRow(desc, price) {
+            return `
+                <div class="row d-flex align-items-center border-bottom py-1">
+                    <div class="col d-flex justify-content-between text-start align-items-center">
+                        <span>
+                            <span class="fw-bold">${desc}</span>
+                        </span>
+                        <span class="text-end fw-semibold">&euro;${price}</span>
+                    </div>
+                </div>
+            `
+        }
+
+        function addToBasket(itemId) {
+            const item = allItemsData.find(i => i.ID === itemId);
+            if (!item) {
+                console.warn(`Item with Id ${itemId} not found!`);
+                return;
+            }
+
+            basketPrice += item.Price;
+            basketList.push({'desc': item.Description, 'price': item.Price});
+            refreshBasket();
+        }
+
+        function refreshBasket() {
+            let basketEl = document.getElementById('basketListEl');
+
+            basketEl.innerHTML = '';
+            for (let item of basketList) {
+                let basketItem = createBasketRow(item.desc, item.price);
+                $(basketEl).append(basketItem);
+            }
+
+            let subtotalEl = `
+                <div class="mt-4 text-end fw-semibold">Totaal: &euro;${basketPrice}</div>
+            `;
+
+            $(basketEl).append(subtotalEl);
+
+            console.log(basketList, basketPrice);
+        }
+
+        async function openBill() {
+            let customerName = openBillName.val();
+            setBillData(customerName);
+
+            var url = "https://www.xanderwemmers.nl/api/restaurant/register";
+
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(customerName)
+            });
+
+            const customer = await response.json();
+            localStorage.setItem('customer', JSON.stringify(customer));
+            customerGuid.html('{' + customer.CustomerGuid + '}');
+
+            console.log(customer);
+        }
+
+        function setBillData(customerName, GUID = '') {
+            createdBillUserName.html(customerName);
+            openBillEl.hide();
+            basketListContainer.show();
+            $('.itemBtn').attr('disabled', false);
+            if (GUID) {
+                customerGuid.html('{' + GUID + '}');
+            }
+        }
+
+        // Listeners
+        openBillBtn.on('click', openBill);
+
+        window.addToBasket = addToBasket;
+
+        async function init() {
+            await getMenuData();
+            showItems();
+            console.log(allItemsData);
+
+            if (localStorage.getItem('customer')) {
+                let customer = JSON.parse(localStorage.getItem('customer'));
+                setBillData(customer.CustomerName, customer.CustomerGuid);
+            }
+        }
+
+        init();
+    });
+</script>
+</body>
+</html>
+
+<!--
+https://xanderwemmers.nl/dev/restaurant
+
+https://xanderwemmers.nl/api/restaurant/starters
+https://xanderwemmers.nl/api/restaurant/mains
+https://xanderwemmers.nl/api/restaurant/deserts
+https://xanderwemmers.nl/api/restaurant/drinks-->
